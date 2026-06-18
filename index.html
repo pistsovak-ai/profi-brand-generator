@@ -1082,7 +1082,7 @@ async function generateWithKrea(kreaKey, prompt) {
   let ratio = '1:1';
   ratioChips.forEach(c => { const t = c.textContent.trim(); if (ratioMap[t]) ratio = t; });
 
-  const resp = await fetch('/.netlify/functions/krea', {
+  const resp = await fetch('https://profi-brand-generator.vercel.app/api/krea', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prompt, kreaKey, aspectRatio: ratio })
