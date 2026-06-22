@@ -16,14 +16,19 @@ export default async function handler(req, res) {
     const validRatios = ['1:1','4:5','9:16','16:9','3:2','2:3','4:3','3:4'];
     const ratio = validRatios.includes(aspectRatio) ? aspectRatio : '1:1';
 
-    // Submit to Krea
-    const submitResp = await fetch('https://api.krea.ai/generate/image/google/nano-banana-pro', {
+    // Переключено на nano-banana-2 (не pro) — даёт более художественный результат
+    // с перспективой и грейном, ближе к ручной генерации в Krea UI
+    const submitResp = await fetch('https://api.krea.ai/generate/image/google/nano-banana-2', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + kreaKey,
         'Content-Type': 'application/json'
       },
-  body: JSON.stringify({ prompt, aspect_ratio: ratio })
+      body: JSON.stringify({
+        prompt,
+        aspect_ratio: ratio,
+        resolution: '1K'
+      })
     });
 
     const submitText = await submitResp.text();
@@ -43,7 +48,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'No job_id: ' + submitText.slice(0, 200) });
     }
 
-    // Poll for result — up to 55 seconds
     for (let i = 0; i < 18; i++) {
       await new Promise(r => setTimeout(r, 3000));
 
