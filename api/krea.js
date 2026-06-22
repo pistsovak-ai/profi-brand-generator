@@ -23,7 +23,7 @@ export default async function handler(req, res) {
         'Authorization': 'Bearer ' + kreaKey,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ prompt, aspectRatio: ratio })
+  body: JSON.stringify({ prompt, aspect_ratio: ratio })
     });
 
     const submitText = await submitResp.text();
