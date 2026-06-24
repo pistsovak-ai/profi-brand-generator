@@ -916,16 +916,21 @@ async function generate() {
     const kreaKey = document.getElementById('krea-key').value.trim();
 
     if (kreaKey) {
-      setLoadStep(2, 'Промпт готов! Генерирую 2 варианта...', 'Krea Nano Banana 2');
+      setLoadStep(2, 'Промпт готов! Генерирую вариант 1 из 2...', 'Krea Nano Banana 2');
       try {
-        // Generate 2 variants in parallel
-        const settled = await Promise.allSettled([
-          generateWithKrea(kreaKey, prompt),
-          generateWithKrea(kreaKey, prompt)
-        ]);
+        const imageUrls = [];
+        const errors = [];
 
-        const imageUrls = settled.filter(r => r.status === 'fulfilled').map(r => r.value);
-        const errors = settled.filter(r => r.status === 'rejected').map(r => r.reason?.message || String(r.reason));
+        // Generate sequentially — one at a time, avoids Vercel concurrency limits
+        for (let i = 0; i < 2; i++) {
+          setLoadStep(2, `Промпт готов! Генерирую вариант ${i + 1} из 2...`, 'Krea Nano Banana 2');
+          try {
+            const url = await generateWithKrea(kreaKey, prompt);
+            imageUrls.push(url);
+          } catch (e) {
+            errors.push(e.message);
+          }
+        }
 
         setLoadStep(3, 'Готово!', '');
         showLoading(false);
