@@ -919,18 +919,24 @@ async function generate() {
       setLoadStep(2, 'Промпт готов! Генерирую 2 варианта...', 'Krea Nano Banana 2');
       try {
         // Generate 2 variants in parallel
-        const [imageUrl1, imageUrl2] = await Promise.allSettled([
+        const settled = await Promise.allSettled([
           generateWithKrea(kreaKey, prompt),
           generateWithKrea(kreaKey, prompt)
-        ]).then(results => results.map(r => r.status === 'fulfilled' ? r.value : null));
+        ]);
+
+        const imageUrls = settled.filter(r => r.status === 'fulfilled').map(r => r.value);
+        const errors = settled.filter(r => r.status === 'rejected').map(r => r.reason?.message || String(r.reason));
 
         setLoadStep(3, 'Готово!', '');
         showLoading(false);
 
-        if (!imageUrl1 && !imageUrl2) {
-          throw new Error('Обе генерации не удались');
+        if (imageUrls.length === 0) {
+          throw new Error(errors.join(' | '));
         }
-        renderResultsWithImages(prompt, [imageUrl1, imageUrl2].filter(Boolean));
+        renderResultsWithImages(prompt, imageUrls);
+        if (errors.length) {
+          showErr('Krea (1 вариант не удался): ' + errors.join(' | '));
+        }
       } catch(e) {
         setLoadStep(3, 'Промпт готов', '');
         showLoading(false);
