@@ -355,13 +355,13 @@ textarea:focus, input:focus, select:focus {
 
 .result-img-wrap {
   width: 100%;
-  aspect-ratio: 1;
   background: var(--blue-light);
   position: relative;
   overflow: hidden;
   display: flex; align-items: center; justify-content: center;
 }
-.result-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.result-img-wrap.placeholder { aspect-ratio: 1; }
+.result-img-wrap img { width: 100%; height: auto; display: block; }
 .img-placeholder {
   display: flex; flex-direction: column; align-items: center; gap: 8px;
   color: var(--blue-mid);
@@ -908,20 +908,29 @@ async function generate() {
   document.getElementById('prompt-preview').classList.remove('on');
 
   try {
-    setLoadStep(1, 'Собираю промпт из токенов брендбука...', 'Без пересказа — точные значения JSON');
-    const prompt = buildPromptFromTokens();
+    setLoadStep(1, 'Строю промпт из токенов...', 'Claude читает брендбук');
+    const prompt = await buildPrompt(apiKey);
     lastPrompt = prompt;
     saveHistory(currentMode, getTopic(), prompt);
 
     const kreaKey = document.getElementById('krea-key').value.trim();
 
     if (kreaKey) {
-      setLoadStep(2, 'Промпт готов! Генерирую изображение...', 'Krea Nano Banana 2');
+      setLoadStep(2, 'Промпт готов! Генерирую 2 варианта...', 'Krea Nano Banana 2');
       try {
-        const imageUrl = await generateWithKrea(kreaKey, prompt);
+        // Generate 2 variants in parallel
+        const [imageUrl1, imageUrl2] = await Promise.allSettled([
+          generateWithKrea(kreaKey, prompt),
+          generateWithKrea(kreaKey, prompt)
+        ]).then(results => results.map(r => r.status === 'fulfilled' ? r.value : null));
+
         setLoadStep(3, 'Готово!', '');
         showLoading(false);
-        renderResultsWithImage(prompt, imageUrl);
+
+        if (!imageUrl1 && !imageUrl2) {
+          throw new Error('Обе генерации не удались');
+        }
+        renderResultsWithImages(prompt, [imageUrl1, imageUrl2].filter(Boolean));
       } catch(e) {
         setLoadStep(3, 'Промпт готов', '');
         showLoading(false);
@@ -952,73 +961,81 @@ function getTopic() {
   return document.getElementById('co-topic').value || '(без описания)';
 }
 
-function buildPromptFromTokens() {
+async function buildPrompt(apiKey) {
   const tokens = BRAND_TOKENS[currentMode];
+  let userMsg = '';
 
   if (currentMode === 'illustration') {
-    const topic = document.getElementById('il-topic').value.trim() || 'product illustration';
+    const topic = document.getElementById('il-topic').value.trim() || 'общая иллюстрация';
     const type = getSolo(document.querySelector('#panel-illustration .chips'));
     const deco = getSelected(document.getElementById('il-deco'));
-    const isSimple = type === 'Один объект';
+    const ratio = getSolo(document.querySelectorAll('#panel-illustration .chips')[3]);
+    userMsg = `Using these exact brand tokens: ${JSON.stringify(tokens.color_palette)}, ${JSON.stringify(tokens.texture)}, ${JSON.stringify(tokens.rendering)}.
 
-    const parts = [
-      topic + '.',
-      tokens.visual_language + ', Profi.ru brand style.',
-      'Built from simple primitive geometric shapes, large rounded forms, clean silhouettes. No outlines.',
-      isSimple ? 'Single isolated object, minimal details, clean composition.' : 'Small narrative scene with 2-3 objects and action.',
-      deco && deco !== 'Ничего' ? 'Decorative elements: ' + deco.toLowerCase() + '.' : '',
-      'Primary gradient fill: ' + tokens.color_palette.primary_gradient.start + ' to ' + tokens.color_palette.primary_gradient.end + '.',
-      'Accent gradient (one small element): ' + tokens.color_palette.accent_gradient.start + ' to ' + tokens.color_palette.accent_gradient.end + '.',
-      'Neutral tones: ' + tokens.color_palette.neutral_colors.join(', ') + '.',
-      'Volume created only through soft linear gradients, faceted surfaces, subtle grain texture — no realistic shadows or reflections.',
-      'Fine grain noise texture across all surfaces, strongest in darker areas, fading toward lighter areas.',
-      'Stylized lighting from top-left.',
-      'Flat 3D appearance, soft rounded corners, friendly, playful, high abstraction, clean composition.',
-      'Transparent background.',
-      'Avoid: realistic lighting, hard shadows, outlines, strokes, glass effects, metallic materials, photorealism, excessive details.'
-    ];
-    return parts.filter(Boolean).join(' ');
+Base style prompt: "${tokens.base_prompt}"
+
+Now create a specific illustration prompt for:
+Subject/scene: ${topic}
+Type: ${type === 'Один объект' ? 'simple (1 isolated object)' : 'narrative scene (2-3 objects with action)'}
+Decorative elements: ${deco || 'sparkles only'}
+Aspect ratio: ${ratio}
+
+Write ONLY the final English prompt (60-100 words). Start directly with the subject description. End with: "profi.ru brand style, flat 3d, fine grain noise texture, #E6EBFF to #849BFF gradient, transparent background".`;
   }
 
   if (currentMode === 'photo') {
-    const topic = document.getElementById('ph-topic').value.trim() || 'specialist at work';
+    const topic = document.getElementById('ph-topic').value.trim() || 'специалист за работой';
     const scene = getSolo(document.querySelector('#panel-photo .chips'));
     const loc = getSolo(document.querySelectorAll('#panel-photo .chips')[1]);
     const mood = getSelected(document.querySelectorAll('#panel-photo .chips')[2]);
+    const ratio = getSolo(document.querySelectorAll('#panel-photo .chips')[3]);
+    userMsg = `Using these brand tokens: ${JSON.stringify(tokens.emotion)}, ${JSON.stringify(tokens.lighting)}, ${JSON.stringify(tokens.post_processing)}, visual principles: ${JSON.stringify(tokens.visual_principles)}.
 
-    const parts = [
-      topic + '.',
-      'Profi Human Lifestyle photography style.',
-      'Scene: ' + scene + '. Location: ' + loc + '. Mood: ' + (mood || 'comfort, trust') + '.',
-      'Real people in authentic everyday moments, not posing, focused on activity. Not looking at camera.',
-      'Lighting: natural daylight, low contrast, soft shadows, slightly cool white balance. No studio look.',
-      'Bright exposure, moderately reduced saturation, natural skin tones.',
-      'Color palette: ' + tokens.color_palette.base.join(', ') + '. Small red accent ' + tokens.color_palette.accent[0] + ' on clothing or objects (5-15% of frame).',
-      'Principles: ' + tokens.visual_principles.join('; ') + '.',
-      'Emotion: ' + tokens.emotion.primary.join(', ') + '.',
-      'Avoid: ' + tokens.emotion.avoid.join(', ') + ', studio look, exaggerated happiness, corporate aesthetics, heavy filters, harsh shadows, oversaturated colors.'
-    ];
-    return parts.filter(Boolean).join(' ');
+Base style: "${tokens.base_prompt}"
+
+Create a specific photo prompt for:
+Scene: ${topic}
+Type: ${scene}
+Location: ${loc}
+Mood: ${mood}
+Aspect ratio: ${ratio}
+
+Write ONLY the final English prompt (60-100 words). Be specific about the scene, people, light and environment. End with: "profi.ru lifestyle photo style, natural daylight, #E6EBFF color atmosphere, slightly cool tone, bright exposure, documentary".`;
   }
 
-  // collage
-  const topic = document.getElementById('co-topic').value.trim() || 'Profi.ru services';
-  const hero = getSolo(document.querySelector('#panel-collage .chips'));
-  const deco = getSelected(document.getElementById('co-deco'));
-  const bg = getSolo(document.querySelectorAll('#panel-collage .chips')[2]);
+  if (currentMode === 'collage') {
+    const topic = document.getElementById('co-topic').value.trim() || 'услуги Профи';
+    const hero = getSolo(document.querySelector('#panel-collage .chips'));
+    const deco = getSelected(document.getElementById('co-deco'));
+    const bg = getSolo(document.querySelectorAll('#panel-collage .chips')[2]);
+    const channel = getSolo(document.querySelectorAll('#panel-collage .chips')[3]);
+    userMsg = `Using these brand tokens: ${JSON.stringify(tokens.composition)}, ${JSON.stringify(tokens.brand_elements)}, restrictions: ${JSON.stringify(tokens.restrictions)}.
 
-  const parts = [
-    topic + '.',
-    'Profi.ru brand photo collage. Visual tone: ' + tokens.visual_tone.join(', ') + '.',
-    'Main subject (' + hero + '): large scale, covers ' + tokens.composition.main_subject.coverage + ' of frame.',
-    tokens.composition.layout.type + ' layout, ' + tokens.composition.layout.negative_space + ' negative space.',
-    'Background: ' + (bg || tokens.background.colors.white) + '.',
-    'Accent color ' + tokens.brand_elements.accent_color + ' on clothing or objects, ' + tokens.brand_elements.accent_weight + ' weight.',
-    deco ? 'Decorative elements: ' + deco.toLowerCase() + '.' : 'Subtle decorative: ' + tokens.decorative_elements.allowed.join(', ') + '.',
-    'Natural commercial photography style — sharp, bright, clean, realistic.',
-    'Avoid: ' + tokens.restrictions.map(r => r.replace(/_/g, ' ')).join(', ') + '.'
-  ];
-  return parts.filter(Boolean).join(' ');
+Base style: "${tokens.base_prompt}"
+
+Create a specific collage prompt for:
+Topic: ${topic}
+Main subject: ${hero}
+Decorative elements: ${deco || 'subtle sparkles'}
+Background: ${bg}
+Channel/format: ${channel}
+
+Write ONLY the final English prompt (60-100 words). Describe exact composition, subject placement, decorative details and color usage. End with: "profi.ru brand collage style, #E6EBFF background, #FF4B55 accent, clean asymmetrical layout, no outlines around objects".`;
+  }
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 500,
+      system: 'You are a brand prompt engineer for Profi.ru. Generate precise, detailed image generation prompts based on brand token JSON. Output ONLY the prompt text, nothing else.',
+      messages: [{ role: 'user', content: userMsg }]
+    })
+  });
+  const data = await resp.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.content[0].text.trim();
 }
 
 // ─── RESULTS ───
@@ -1031,7 +1048,7 @@ function renderResults(prompt) {
   // Show 3 placeholder cards with the prompt
   grid.innerHTML = [1,2,3].map((n, i) => `
     <div class="result-card" style="animation-delay:${i*0.07}s">
-      <div class="result-img-wrap">
+      <div class="result-img-wrap placeholder">
         <div class="img-placeholder">
           <svg viewBox="0 0 40 40" fill="none">
             <rect x="4" y="4" width="32" height="32" rx="8" fill="currentColor" opacity="0.15"/>
@@ -1074,7 +1091,7 @@ async function generateWithKrea(kreaKey, prompt) {
   let ratio = '1:1';
   ratioChips.forEach(c => { const t = c.textContent.trim(); if (ratioMap[t]) ratio = t; });
 
-  const resp = await fetch('https://profi-brand-generator.vercel.app/api/krea', {
+  const resp = await fetch('/.netlify/functions/krea', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prompt, kreaKey, aspectRatio: ratio })
@@ -1087,26 +1104,32 @@ async function generateWithKrea(kreaKey, prompt) {
 }
 
 function renderResultsWithImage(prompt, imageUrl) {
+  renderResultsWithImages(prompt, [imageUrl]);
+}
+
+function renderResultsWithImages(prompt, imageUrls) {
   const grid = document.getElementById('results-grid');
   const modeLabels = { illustration: ['Иллюстрация', 'tag-illus'], photo: ['Фото', 'tag-photo'], collage: ['Коллаж', 'tag-collage'] };
   const [modeLabel, modeClass] = modeLabels[currentMode];
   const topic = getTopic();
+  const isSingle = imageUrls.length === 1;
 
-  grid.innerHTML = `
-    <div class="result-card" style="grid-column: 1/-1; max-width: 520px; margin: 0 auto">
-      <div class="result-img-wrap" style="aspect-ratio:1">
-        <img src="${imageUrl}" alt="Сгенерированное изображение" style="width:100%;height:100%;object-fit:cover">
+  grid.innerHTML = imageUrls.map((imageUrl, i) => `
+    <div class="result-card" style="${isSingle ? 'grid-column: 1/-1; max-width: 520px; margin: 0 auto;' : ''} animation-delay:${i*0.07}s">
+      <div class="result-img-wrap">
+        <img src="${imageUrl}" alt="Сгенерированное изображение, вариант ${i+1}">
       </div>
       <div class="result-body">
-        <div class="result-mode-tag ${modeClass}">${modeLabel} · Nano Banana 2</div>
+        <div class="result-mode-tag ${modeClass}">${modeLabel} · Nano Banana 2${imageUrls.length > 1 ? ' · Вариант ' + (i+1) : ''}</div>
         <div class="result-desc">${topic.slice(0,100)}${topic.length>100?'...':''}</div>
         <div class="result-actions">
-          <a class="ra-btn primary" href="${imageUrl}" download="profi-illustration.png">Скачать</a>
+          <a class="ra-btn primary" href="${imageUrl}" download="profi-illustration-${i+1}.png">Скачать</a>
           <button class="ra-btn" onclick="copyPrompt()">Скопировать промпт</button>
-          <button class="ra-btn" onclick="generate()">Ещё вариант</button>
+          ${i === 0 ? `<button class="ra-btn" onclick="generate()">Ещё варианты</button>` : ''}
         </div>
       </div>
-    </div>`;
+    </div>
+  `).join('');
 }
 
 function copyPrompt() {
