@@ -474,6 +474,56 @@ textarea:focus, input:focus, select:focus {
 
 /* SEPARATOR */
 .sep { height: 1px; background: var(--border); margin: 16px 0; }
+
+/* ── BRAND CHECK ── */
+.bc-upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: var(--bg);
+}
+.bc-upload-zone:hover, .bc-upload-zone.drag-over {
+  border-color: var(--blue);
+  background: #EEF1FF;
+}
+.bc-upload-icon { font-size: 28px; margin-bottom: 8px; }
+.bc-upload-text { font-size: 13px; font-weight: 700; color: var(--text-1); margin-bottom: 4px; }
+.bc-upload-hint { font-size: 11px; color: var(--text-2); }
+.bc-result-card {
+  background: var(--card-bg, #fff);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  animation: fadeUp 0.35s ease both;
+}
+.bc-score-header {
+  display: flex; align-items: center; gap: 20px;
+  padding: 24px 28px;
+  background: var(--ink, #181C2E);
+}
+.bc-score-circle {
+  width: 72px; height: 72px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; font-weight: 900; flex-shrink: 0;
+}
+.bc-score-circle.high { background: #0DB87520; color: #0DB875; border: 3px solid #0DB875; }
+.bc-score-circle.mid  { background: #F59E0B20; color: #F59E0B; border: 3px solid #F59E0B; }
+.bc-score-circle.low  { background: #FA2A4820; color: #FA2A48; border: 3px solid #FA2A48; }
+.bc-score-label { color: #fff; }
+.bc-score-label h3 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+.bc-score-label p  { font-size: 13px; color: #9AA0BC; line-height: 1.4; }
+.bc-checklist { padding: 20px 24px; display: flex; flex-direction: column; gap: 10px; }
+.bc-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 10px; }
+.bc-item.ok   { background: #F0FDF8; }
+.bc-item.warn { background: #FFFBEB; }
+.bc-item.fail { background: #FFF1F3; }
+.bc-item-icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+.bc-item-body h4 { font-size: 13px; font-weight: 700; color: var(--text-1); margin-bottom: 3px; }
+.bc-item-body p  { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+.bc-actions { padding: 0 24px 20px; display: flex; gap: 10px; }
 </style>
 </head>
 <body>
@@ -494,6 +544,7 @@ textarea:focus, input:focus, select:focus {
         <button class="mode-tab active" onclick="setMode('illustration', this)">Иллюстр.</button>
         <button class="mode-tab" onclick="setMode('photo', this)">Фото</button>
         <button class="mode-tab" onclick="setMode('collage', this)">Коллаж</button>
+        <button class="mode-tab" onclick="setMode('brandcheck', this)">Бренд-чек</button>
       </div>
     </div>
 
@@ -642,6 +693,38 @@ textarea:focus, input:focus, select:focus {
 
       </div>
 
+      <!-- ── BRAND CHECK MODE ── -->
+      <div class="mode-panel" id="panel-brandcheck">
+        <div class="field-group">
+          <label class="field-label">Загрузи макет для проверки</label>
+          <div class="bc-upload-zone" id="bc-upload-zone" onclick="document.getElementById('bc-file-input').click()">
+            <input type="file" id="bc-file-input" accept="image/*" style="display:none" onchange="handleBrandCheckFile(event)">
+            <div class="bc-upload-icon">🖼️</div>
+            <div class="bc-upload-text">Нажми или перетащи изображение</div>
+            <div class="bc-upload-hint">PNG, JPG, WebP — скрин из Figma или готовый баннер</div>
+          </div>
+          <div id="bc-preview-wrap" style="display:none;margin-top:12px">
+            <img id="bc-preview-img" style="width:100%;border-radius:10px;border:1.5px solid var(--border)">
+            <button onclick="clearBrandCheckFile()" style="margin-top:8px;font-size:11px;color:var(--text-2);background:none;border:none;cursor:pointer;padding:0">✕ Удалить и загрузить другой</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Что проверяем?</label>
+          <div class="chips" id="bc-checks">
+            <button class="chip on" onclick="toggleChip(this)">Цвета</button>
+            <button class="chip on" onclick="toggleChip(this)">Типографика</button>
+            <button class="chip on" onclick="toggleChip(this)">Стиль иллюстрации</button>
+            <button class="chip on" onclick="toggleChip(this)">Логотип</button>
+            <button class="chip on" onclick="toggleChip(this)">Композиция</button>
+            <button class="chip" onclick="toggleChip(this)">Фотостиль</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Контекст (необязательно)</label>
+          <textarea id="bc-context" rows="2" placeholder="Например: баннер для Instagram Stories, рекламирует услугу уборки..."></textarea>
+        </div>
+      </div>
+
     </div><!-- /sidebar-body -->
 
     <div class="sidebar-footer">
@@ -663,7 +746,7 @@ textarea:focus, input:focus, select:focus {
         <input type="checkbox" id="remember-key" onchange="toggleRemember()" style="width:14px;height:14px;accent-color:var(--blue)">
         Запомнить ключи на этом устройстве
       </label>
-      <button class="gen-btn" onclick="generate()" id="gen-btn" disabled>
+      <button class="gen-btn" onclick="currentMode==='brandcheck'?runBrandCheck():generate()" id="gen-btn" disabled>
         <span id="gen-btn-text">Сгенерировать</span>
       </button>
     </div>
@@ -784,7 +867,9 @@ function setMode(mode, btn) {
   document.querySelectorAll('.mode-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + mode).classList.add('active');
 
-  const titles = { illustration: ['Иллюстрации', 'Генерация в фирменном стиле Профи.ру'], photo: ['Фотографии', 'Lifestyle документальный стиль'], collage: ['Фотоколлажи', 'Брендовые композиции'] };
+  const titles = { illustration: ['Иллюстрации', 'Генерация в фирменном стиле Профи.ру'], photo: ['Фотографии', 'Lifestyle документальный стиль'], collage: ['Фотоколлажи', 'Брендовые композиции'], brandcheck: ['Бренд-чек', 'Проверка макета на соответствие брендбуку'] };
+  const btnLabels = { illustration: 'Сгенерировать', photo: 'Сгенерировать', collage: 'Сгенерировать', brandcheck: 'Проверить макет' };
+  document.getElementById('gen-btn-text').textContent = btnLabels[mode];
   document.getElementById('main-title').textContent = titles[mode][0];
   document.getElementById('main-sub').textContent = titles[mode][1];
 }
@@ -894,6 +979,197 @@ function saveHistory(mode, topic, prompt) {
   });
   if (history.length > 30) history.shift();
   localStorage.setItem('profi_gen_history', JSON.stringify(history));
+}
+
+// ─── BRAND CHECK FILE ───
+let bcImageBase64 = null;
+
+function handleBrandCheckFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    bcImageBase64 = e.target.result.split(',')[1];
+    document.getElementById('bc-preview-img').src = e.target.result;
+    document.getElementById('bc-preview-wrap').style.display = 'block';
+    document.getElementById('bc-upload-zone').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearBrandCheckFile() {
+  bcImageBase64 = null;
+  document.getElementById('bc-file-input').value = '';
+  document.getElementById('bc-preview-wrap').style.display = 'none';
+  document.getElementById('bc-upload-zone').style.display = 'block';
+}
+
+// Drag-and-drop support for upload zone
+document.addEventListener('DOMContentLoaded', () => {
+  const zone = document.getElementById('bc-upload-zone');
+  if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    document.getElementById('bc-file-input').files = e.dataTransfer.files;
+    handleBrandCheckFile({ target: { files: e.dataTransfer.files } });
+  });
+});
+
+// ─── RUN BRAND CHECK ───
+async function runBrandCheck() {
+  const apiKey = document.getElementById('api-key').value.trim();
+  if (!apiKey) return;
+  if (!bcImageBase64) {
+    showErr('Загрузи изображение макета для проверки');
+    return;
+  }
+
+  const checks = Array.from(document.querySelectorAll('#bc-checks .chip.on')).map(c => c.textContent.trim());
+  if (!checks.length) {
+    showErr('Выбери хотя бы один параметр проверки');
+    return;
+  }
+  const context = document.getElementById('bc-context').value.trim();
+
+  clearErr();
+  showLoading(true);
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('results-grid').innerHTML = '';
+
+  setLoadStep(1, 'Анализирую макет...', 'Claude изучает изображение');
+
+  const systemPrompt = `Ты — эксперт по брендингу Профи.ру. Анализируй макеты строго по брендбуку компании.
+
+БРЕНДБУК ПРОФИ.РУ:
+**Цвета:**
+- Основной градиент: #E6EBFF → #849BFF (синий-фиолетовый)
+- Акцентный градиент: #FE6B81 → #FA2A48 (красный)
+- Нейтральные: #D9DDF0, #C7CCE8, #EEF1FF
+- Фон: #FFFFFF или #E6EBFF
+- Текст: #181C2E
+
+**Типографика:**
+- Один шрифт без засечек
+- Иерархия: крупный жирный заголовок, средний подзаголовок, мелкий текст
+- Без декоративных и рукописных шрифтов
+
+**Иллюстративный стиль:**
+- Геометрические формы, скруглённые углы, без контуров
+- Текстура: лёгкий grain-шум
+- Освещение: стилизованный свет сверху-слева
+- Минимализм: 1–3 объекта, чистый фон
+
+**Фотостиль (Human Lifestyle):**
+- Натуральный дневной свет, низкий контраст
+- Приглушённая насыщенность
+- Живые, не постановочные сцены
+- Тёплая атмосфера
+
+**Логотип:**
+- Отступы строго по гайдлайну
+- Не менять цвет, не искажать пропорции
+- Не перекрывать другими элементами
+
+**Композиция:**
+- Чистота и воздух
+- Один визуальный центр
+- Нет перегруженности
+
+Отвечай СТРОГО в JSON-формате без markdown-обёртки:
+{
+  "score": <число 0-100>,
+  "verdict": "<одна фраза-оценка>",
+  "items": [
+    { "category": "<название>", "status": "<ok|warn|fail>", "comment": "<комментарий>" }
+  ]
+}`;
+
+  const userContent = [
+    {
+      type: "image",
+      source: { type: "base64", media_type: "image/png", data: bcImageBase64 }
+    },
+    {
+      type: "text",
+      text: `Проверь этот макет на соответствие брендбуку Профи.ру.
+Проверяемые параметры: ${checks.join(', ')}.
+${context ? 'Контекст: ' + context : ''}
+Верни только JSON.`
+    }
+  ];
+
+  try {
+    setLoadStep(2, 'Claude анализирует...', 'Сверяю с токенами брендбука');
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userContent }]
+      })
+    });
+
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+
+    const raw = data.content.map(b => b.text || '').join('').trim();
+    const clean = raw.replace(/^```json|^```|```$/gm, '').trim();
+    const result = JSON.parse(clean);
+
+    setLoadStep(3, 'Готово!', '');
+    showLoading(false);
+    renderBrandCheckResult(result);
+
+  } catch(e) {
+    showLoading(false);
+    showErr('Ошибка бренд-чека: ' + e.message);
+  }
+}
+
+function renderBrandCheckResult(result) {
+  const score = result.score || 0;
+  const scoreClass = score >= 75 ? 'high' : score >= 50 ? 'mid' : 'low';
+  const statusIcon = { ok: '✅', warn: '⚠️', fail: '❌' };
+  const statusLabel = { ok: 'ОК', warn: 'Замечание', fail: 'Не соответствует' };
+
+  const grid = document.getElementById('results-grid');
+  grid.innerHTML = `
+    <div class="bc-result-card" style="grid-column:1/-1">
+      <div class="bc-score-header">
+        <div class="bc-score-circle ${scoreClass}">${score}</div>
+        <div class="bc-score-label">
+          <h3>${result.verdict || 'Проверка завершена'}</h3>
+          <p>Соответствие брендбуку Профи.ру · ${result.items?.length || 0} параметров</p>
+        </div>
+      </div>
+      <div class="bc-checklist">
+        ${(result.items || []).map(item => `
+          <div class="bc-item ${item.status}">
+            <span class="bc-item-icon">${statusIcon[item.status] || '•'}</span>
+            <div class="bc-item-body">
+              <h4>${item.category} <span style="font-weight:500;color:var(--text-2)">· ${statusLabel[item.status] || item.status}</span></h4>
+              <p>${item.comment}</p>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="bc-actions">
+        <button class="ra-btn primary" onclick="runBrandCheck()">Проверить снова</button>
+        <button class="ra-btn" onclick="clearBrandCheckFile();document.getElementById('results-grid').innerHTML=''">Загрузить другой макет</button>
+      </div>
+    </div>`;
 }
 
 // ─── GENERATE ───
