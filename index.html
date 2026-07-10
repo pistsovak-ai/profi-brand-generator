@@ -115,26 +115,26 @@ body {
 /* ─── EMPTY STATE VISUAL (COLLAGE) ─── */
 .collage {
   position: relative;
-  height: 460px;
-  width: 1240px;
+  height: 298px;
+  width: 799px;
   max-width: 90vw;
-  margin: 40px auto 24px;
+  margin: 26px auto 15px;
   left: 50%;
   transform: translateX(-50%);
 }
 .empty-card {
   position: absolute;
-  top: 40px;
-  width: 340px; height: 340px;
-  border-radius: 36px;
+  top: 26px;
+  width: 219px; height: 219px;
+  border-radius: 23px;
   overflow: hidden;
   opacity: 0;
-  transform: translateY(80px) scale(0.85) rotate(0deg);
+  transform: translateY(52px) scale(0.85) rotate(0deg);
 }
 .empty-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.card-illus { left: 20px; }
-.card-photo { left: 380px; z-index: 2; }
-.card-collage { left: 740px; }
+.card-illus { left: 13px; }
+.card-photo { left: 245px; z-index: 2; }
+.card-collage { left: 477px; }
 /* появление (запускается добавлением класса .on через JS) */
 .card-illus.on {
   opacity: 1;
@@ -155,14 +155,14 @@ body {
 .empty-card.on.card-illus   { animation: floatCard1 3.4s ease-in-out infinite 0.7s; }
 .empty-card.on.card-photo   { animation: floatCard2 3.4s ease-in-out infinite 0.82s; }
 .empty-card.on.card-collage { animation: floatCard3 3.4s ease-in-out infinite 0.94s; }
-@keyframes floatCard1 { 0%,100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-16px) rotate(-4deg); } }
-@keyframes floatCard2 { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-20px) rotate(1deg); } }
-@keyframes floatCard3 { 0%,100% { transform: translateY(0) rotate(5deg); } 50% { transform: translateY(-14px) rotate(7deg); } }
+@keyframes floatCard1 { 0%,100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-10px) rotate(-4deg); } }
+@keyframes floatCard2 { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-13px) rotate(1deg); } }
+@keyframes floatCard3 { 0%,100% { transform: translateY(0) rotate(5deg); } 50% { transform: translateY(-9px) rotate(7deg); } }
 /* бабблы */
 .empty-bubble { position: absolute; opacity: 0; transform: scale(0.7); }
 .empty-bubble img { width: 100%; display: block; }
-.bubble-1 { bottom: -12px; left: 0; width: 440px; }
-.bubble-2 { top: -32px; right: 20px; width: 420px; }
+.bubble-1 { bottom: -8px; left: 0; width: 283px; }
+.bubble-2 { top: -21px; right: 13px; width: 270px; }
 .empty-bubble.on {
   opacity: 1;
   transform: scale(1);
@@ -381,6 +381,79 @@ body {
 .bc-item { display: flex; gap: 12px; padding: 12px; border-radius: 10px; background: var(--bg); }
 .bc-item h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
 .bc-item p { font-size: 13px; color: var(--text-2); }
+/* ─── BRAND CHECK RESULT ─── */
+.bc-result-card {
+  background: var(--surface);
+  border-radius: 20px;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+.bc-score-label h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+  font-family: 'Inter', sans-serif;
+}
+.bc-score-label p {
+  font-size: 14px;
+  color: var(--text-2);
+  font-family: 'Inter', sans-serif;
+}
+.bc-checklist {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bc-item {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--bg);
+  align-items: flex-start;
+}
+.bc-item-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.bc-item-body h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+  font-family: 'Inter', sans-serif;
+}
+.bc-item-body p {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+  font-family: 'Inter', sans-serif;
+}
+.bc-actions {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px 24px;
+}
+.ra-btn {
+  border: none;
+  background: var(--blue-light);
+  color: var(--text-blue);
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ra-btn.primary {
+  background: var(--red);
+  color: #fff;
+}
+.ra-btn:hover { opacity: 0.88; }
 /* error */
 .err-card {
   display: none;
