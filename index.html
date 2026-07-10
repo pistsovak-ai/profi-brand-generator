@@ -410,7 +410,7 @@ body {
       <input type="password" class="menu-key-input" id="krea-key" placeholder="Krea key..." oninput="checkKreaKey()" autocomplete="off">
       <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-2);margin-top:8px;cursor:pointer">
         <input type="checkbox" id="remember-key" onchange="toggleRemember()" style="width:13px;height:13px">
-        Запомнить
+        Забыть ключи
       </label>
     </div>
   </nav>
@@ -631,28 +631,24 @@ function checkApiKey() {
   const key = document.getElementById('api-key').value.trim();
   const valid = key.length > 20;
   document.getElementById('api-status-text').textContent = valid ? 'Claude API подключён' : 'Claude API';
-  if (valid && document.getElementById('remember-key').checked) {
-    localStorage.setItem('profi_api_key', key);
-  }
+  if (valid) localStorage.setItem('profi_api_key', key);
 }
 function checkKreaKey() {
   const key = document.getElementById('krea-key').value.trim();
   const valid = key.length > 10;
   document.getElementById('krea-status-text').textContent = valid ? 'Krea API подключён' : 'Krea API';
-  if (valid && document.getElementById('remember-key').checked) {
-    localStorage.setItem('profi_krea_key', key);
-  }
+  if (valid) localStorage.setItem('profi_krea_key', key);
 }
 function toggleRemember() {
-  const key = document.getElementById('api-key').value.trim();
-  const kreaKey = document.getElementById('krea-key').value.trim();
-  const checked = document.getElementById('remember-key').checked;
-  if (checked) {
-    if (key.length > 20) localStorage.setItem('profi_api_key', key);
-    if (kreaKey.length > 10) localStorage.setItem('profi_krea_key', kreaKey);
-  } else {
+  // Checkbox теперь означает "Забыть ключи"
+  if (document.getElementById('remember-key').checked) {
     localStorage.removeItem('profi_api_key');
     localStorage.removeItem('profi_krea_key');
+    document.getElementById('api-key').value = '';
+    document.getElementById('krea-key').value = '';
+    document.getElementById('api-status-text').textContent = 'Claude API';
+    document.getElementById('krea-status-text').textContent = 'Krea API';
+    document.getElementById('remember-key').checked = false;
   }
 }
 function loadSavedKey() {
