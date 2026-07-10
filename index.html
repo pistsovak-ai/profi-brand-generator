@@ -207,8 +207,16 @@ body {
 .controls-row {
   display: flex;
   align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+}
+.chips-wrap {
+  display: flex;
+  align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 }
 .chip {
   border: none;
@@ -244,8 +252,11 @@ body {
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
+  align-self: center;
 }
-.gen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.gen-btn:disabled { cursor: not-allowed; }
+.gen-btn.loading { opacity: 0.6; cursor: wait; }
 
 /* mode-specific chip groups hidden by default */
 .chip-group { display: none; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -476,6 +487,7 @@ body {
     </div>
 
     <div class="controls-row">
+      <div class="chips-wrap">
       <!-- ILLUSTRATION controls -->
       <div class="chip-group active" data-mode="illustration">
         <button class="chip" onclick="toggleChip(this)">Спарклы <svg class="chip-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg></button>
@@ -504,9 +516,9 @@ body {
       </div>
       <!-- BRANDCHECK controls (empty) -->
       <div class="chip-group" data-mode="brandcheck"></div>
+      </div>
 
-      <div class="spacer"></div>
-      <button class="gen-btn" onclick="currentMode==='brandcheck'?runBrandCheck():generate()" id="gen-btn" disabled>
+      <button class="gen-btn" onclick="currentMode==='brandcheck'?runBrandCheck():generate()" id="gen-btn">
         <span id="gen-btn-text">Сгенерировать</span>
       </button>
     </div>
@@ -626,7 +638,6 @@ function checkApiKey() {
   const valid = key.length > 20;
   document.getElementById('api-dot').className = 'api-dot' + (valid ? ' ok' : '');
   document.getElementById('api-status-text').textContent = valid ? 'Claude API подключён' : 'Claude API';
-  document.getElementById('gen-btn').disabled = !valid;
   if (valid && document.getElementById('remember-key').checked) {
     localStorage.setItem('profi_api_key', key);
   }
@@ -908,7 +919,17 @@ function renderBrandCheckResult(result) {
 // ─── GENERATE ───
 async function generate() {
   const apiKey = document.getElementById('api-key').value.trim();
-  if (!apiKey) return;
+  if (!apiKey) {
+    showErr('Сначала введите Claude API-ключ в меню «Ключи API» слева');
+    document.getElementById('menu-keys')?.classList.add('open');
+    return;
+  }
+  const topic = getTopic();
+  if (!topic || !topic.trim()) {
+    showErr('Опишите тему или сюжет в поле выше');
+    document.querySelector('.mode-input.active, .mode-input[data-mode="'+currentMode+'"]')?.focus();
+    return;
+  }
 
   clearErr();
   showLoading(true);
@@ -1130,7 +1151,9 @@ function copyPrompt() {
 // ─── UI HELPERS ───
 function showLoading(on) {
   document.getElementById('loading').className = 'loading-card' + (on ? ' on' : '');
-  document.getElementById('gen-btn').disabled = on;
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = on;
+  btn.classList.toggle('loading', on);
   document.getElementById('gen-btn-text').textContent = on ? 'Генерирую...' : 'Сгенерировать';
   if (on) { const es = document.getElementById('empty-state'); if (es) es.style.display = 'none'; }
 }
