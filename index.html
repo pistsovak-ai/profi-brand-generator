@@ -514,8 +514,14 @@ body {
         <button class="chip solo" onclick="soloChip(this,'co-ratio')">4:5</button>
         <button class="chip solo" onclick="soloChip(this,'co-ratio')">16:9</button>
       </div>
-      <!-- BRANDCHECK controls (empty) -->
-      <div class="chip-group" data-mode="brandcheck"></div>
+      <!-- BRANDCHECK controls -->
+      <div class="chip-group" data-mode="brandcheck" id="bc-checks">
+        <button class="chip on" onclick="toggleChip(this)">Цвета</button>
+        <button class="chip on" onclick="toggleChip(this)">Типографика</button>
+        <button class="chip on" onclick="toggleChip(this)">Стиль иллюстрации</button>
+        <button class="chip on" onclick="toggleChip(this)">Логотип</button>
+        <button class="chip on" onclick="toggleChip(this)">Композиция</button>
+      </div>
       </div>
 
       <button class="gen-btn" onclick="currentMode==='brandcheck'?runBrandCheck():generate()" id="gen-btn">
@@ -767,18 +773,23 @@ document.addEventListener('DOMContentLoaded', () => {
 // ─── RUN BRAND CHECK ───
 async function runBrandCheck() {
   const apiKey = document.getElementById('api-key').value.trim();
-  if (!apiKey) return;
+  if (!apiKey) {
+    showErr('Сначала введите Claude API-ключ в меню «Ключи API» слева');
+    document.getElementById('menu-keys')?.classList.add('open');
+    return;
+  }
   if (!bcImageBase64) {
-    showErr('Загрузи изображение макета для проверки');
+    showErr('Загрузите изображение макета для проверки');
     return;
   }
 
   const checks = Array.from(document.querySelectorAll('#bc-checks .chip.on')).map(c => c.textContent.trim());
   if (!checks.length) {
-    showErr('Выбери хотя бы один параметр проверки');
+    showErr('Выберите хотя бы один параметр проверки');
     return;
   }
-  const context = document.getElementById('bc-context').value.trim();
+  const ctxEl = document.getElementById('bc-context');
+  const context = ctxEl ? ctxEl.value.trim() : '';
 
   clearErr();
   showLoading(true);
