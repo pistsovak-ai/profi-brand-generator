@@ -8,7 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
   --blue: #849BFF;
   --blue-light: #E6EBFF;
@@ -22,9 +21,7 @@
   --text-blue: #849BFF;
   --green: #0DB875;
 }
-
 html { scroll-behavior: smooth; }
-
 body {
   font-family: 'Inter', sans-serif;
   background: var(--bg);
@@ -33,14 +30,12 @@ body {
   font-size: 16px;
   line-height: 1.4;
 }
-
 /* ─── LAYOUT ─── */
 .app {
   position: relative;
   min-height: 100vh;
   padding: 32px;
 }
-
 /* ─── LOGO ─── */
 .logo {
   position: absolute;
@@ -52,7 +47,6 @@ body {
   letter-spacing: -0.5px;
   z-index: 10;
 }
-
 /* ─── SIDEBAR MENU ─── */
 .menu {
   position: absolute;
@@ -106,7 +100,6 @@ body {
   color: var(--text);
 }
 .menu-key-input::placeholder { color: var(--blue-mid); }
-
 /* ─── CENTER STAGE ─── */
 .stage {
   max-width: 740px;
@@ -114,11 +107,11 @@ body {
   min-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
+  padding-top: 80px;
   padding-bottom: 140px;
 }
-
 /* ─── EMPTY STATE VISUAL (COLLAGE) ─── */
 .collage {
   position: relative;
@@ -176,7 +169,6 @@ body {
   transition: transform .5s ease .5s, opacity .5s ease .5s;
 }
 .bubble-2.on { transition-delay: .65s; }
-
 /* ─── BOTTOM INPUT PANEL ─── */
 .input-panel {
   position: fixed;
@@ -203,7 +195,6 @@ body {
 }
 .input-field::placeholder { color: var(--text-2); }
 .input-field:focus { outline: none; }
-
 .controls-row {
   display: flex;
   align-items: center;
@@ -238,9 +229,7 @@ body {
   color: var(--surface);
 }
 .chip-icon { width: 14px; height: 14px; display: inline-block; }
-
 .spacer { flex: 1; }
-
 .gen-btn {
   border: none;
   background: var(--red);
@@ -257,11 +246,9 @@ body {
 }
 .gen-btn:disabled { cursor: not-allowed; }
 .gen-btn.loading { opacity: 0.6; cursor: wait; }
-
 /* mode-specific chip groups hidden by default */
 .chip-group { display: none; align-items: center; gap: 8px; flex-wrap: wrap; }
 .chip-group.active { display: flex; }
-
 /* ─── LOADING CARD ─── */
 .loading-card {
   display: none;
@@ -275,13 +262,11 @@ body {
 }
 .loading-card.on { display: block; }
 .loading-spark {
-  width: 32px; height: 32px;
+  width: 40px; height: 41px;
   margin: 0 auto 16px;
-  color: var(--blue);
 }
 .loading-text { font-size: 16px; color: var(--text); margin-bottom: 6px; }
 .loading-sub { font-size: 14px; color: var(--text-2); }
-
 /* ─── RESULTS ─── */
 .results-wrap {
   width: 740px;
@@ -326,7 +311,6 @@ body {
 }
 .result-card img { width: 100%; display: block; }
 .result-card.single { grid-column: 1 / -1; max-width: 460px; margin: 0 auto; }
-
 /* ─── LIGHTBOX ─── */
 .lightbox {
   display: none;
@@ -358,7 +342,6 @@ body {
   display: inline-flex; align-items: center; gap: 8px;
   text-decoration: none;
 }
-
 /* ─── BRAND CHECK ─── */
 .bc-upload {
   border: 2px dashed var(--border);
@@ -398,7 +381,6 @@ body {
 .bc-item { display: flex; gap: 12px; padding: 12px; border-radius: 10px; background: var(--bg); }
 .bc-item h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
 .bc-item p { font-size: 13px; color: var(--text-2); }
-
 /* error */
 .err-card {
   display: none;
@@ -408,15 +390,12 @@ body {
   width: 740px; max-width: 100%; margin: 0 auto 16px;
 }
 .err-card.on { display: block; }
-
 .hidden { display: none !important; }
 </style>
 </head>
 <body>
-
 <div class="app">
   <div class="logo"><img src="assets/logo.svg" alt="Профи.ру" style="height:24px;display:block"></div>
-
   <!-- MENU -->
   <nav class="menu">
     <button class="menu-item active" onclick="setMode('illustration', this)">Иллюстрация</button>
@@ -435,10 +414,8 @@ body {
       </label>
     </div>
   </nav>
-
   <!-- CENTER STAGE -->
   <div class="stage">
-
     <!-- Collage (empty state / home) -->
     <div class="collage" id="empty-state">
       <div class="empty-card card-illus"><img src="assets/illustration-umbrella.png" alt=""></div>
@@ -447,14 +424,40 @@ body {
       <div class="empty-bubble bubble-1"><img src="assets/bubble-illustration.svg" alt="иллюстрации в фирменном стиле"></div>
       <div class="empty-bubble bubble-2"><img src="assets/bubble-photo.svg" alt="фото и коллажи по брендбуку"></div>
     </div>
-
     <!-- Loading -->
     <div class="loading-card" id="loading">
-      <svg class="loading-spark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5z"/></svg>
+      <svg class="loading-spark" width="40" height="41" viewBox="0 0 40 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15.4776 30.1055L16.6231 25.3912C17.4906 21.8212 20.2579 19.0217 23.8176 18.1129L28.2921 16.9706L23.8176 15.8283C20.2579 14.9195 17.4906 12.12 16.6231 8.55001L15.4776 3.83574L14.3321 8.55001C13.4646 12.12 10.6973 14.9195 7.1376 15.8283L2.66309 16.9706L7.1376 18.1129C10.6973 19.0217 13.4646 21.8212 14.332 25.3912L15.4776 30.1055Z" fill="url(#stars_grad0)"/>
+        <path d="M15.4776 30.1055L16.6231 25.3912C17.4906 21.8212 20.2579 19.0217 23.8176 18.1129L28.2921 16.9706L23.8176 15.8283C20.2579 14.9195 17.4906 12.12 16.6231 8.55001L15.4776 3.83574L14.3321 8.55001C13.4646 12.12 10.6973 14.9195 7.1376 15.8283L2.66309 16.9706L7.1376 18.1129C10.6973 19.0217 13.4646 21.8212 14.332 25.3912L15.4776 30.1055Z" fill="url(#stars_grad1)"/>
+        <path d="M15.4776 30.1055L16.6231 25.3912C17.4906 21.8212 20.2579 19.0217 23.8176 18.1129L28.2921 16.9706L23.8176 15.8283C20.2579 14.9195 17.4906 12.12 16.6231 8.55001L15.4776 3.83574L14.3321 8.55001C13.4646 12.12 10.6973 14.9195 7.1376 15.8283L2.66309 16.9706L7.1376 18.1129C10.6973 19.0217 13.4646 21.8212 14.332 25.3912L15.4776 30.1055Z" fill="url(#stars_grad2)"/>
+        <path d="M30.1488 38.7832L30.7871 36.1565C31.2704 34.1674 32.8123 32.6076 34.7957 32.1012L37.2888 31.4647L34.7957 30.8282C32.8123 30.3219 31.2704 28.7621 30.7871 26.7729L30.1488 24.1462L29.5105 26.7729C29.0272 28.7621 27.4853 30.3219 25.5019 30.8282L23.0088 31.4647L25.5019 32.1012C27.4853 32.6076 29.0272 34.1674 29.5105 36.1565L30.1488 38.7832Z" fill="url(#stars_grad3)"/>
+        <path d="M30.1488 38.7832L30.7871 36.1565C31.2704 34.1674 32.8123 32.6076 34.7957 32.1012L37.2888 31.4647L34.7957 30.8282C32.8123 30.3219 31.2704 28.7621 30.7871 26.7729L30.1488 24.1462L29.5105 26.7729C29.0272 28.7621 27.4853 30.3219 25.5019 30.8282L23.0088 31.4647L25.5019 32.1012C27.4853 32.6076 29.0272 34.1674 29.5105 36.1565L30.1488 38.7832Z" fill="url(#stars_grad4)"/>
+        <defs>
+          <linearGradient id="stars_grad0" x1="17.2758" y1="17.3943" x2="9.53199" y2="30.2896" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FA2B49"/>
+            <stop offset="1" stop-color="#FFA2B0"/>
+          </linearGradient>
+          <linearGradient id="stars_grad1" x1="2.66309" y1="24.3246" x2="22.2876" y2="10.2155" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#C5D1FF"/>
+            <stop offset="1" stop-color="#7590FF"/>
+          </linearGradient>
+          <linearGradient id="stars_grad2" x1="-2.82884" y1="17.3943" x2="22.2876" y2="10.2155" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#C5D1FF"/>
+            <stop offset="1" stop-color="#B6C4FF"/>
+          </linearGradient>
+          <linearGradient id="stars_grad3" x1="31.1507" y1="31.7008" x2="26.836" y2="38.8858" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FA2B49"/>
+            <stop offset="1" stop-color="#FFA2B0"/>
+          </linearGradient>
+          <linearGradient id="stars_grad4" x1="19.9488" y1="31.7008" x2="33.9432" y2="27.7009" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#C5D1FF"/>
+            <stop offset="1" stop-color="#B6C4FF"/>
+          </linearGradient>
+        </defs>
+      </svg>
       <div class="loading-text" id="load-text">Генерирую...</div>
       <div class="loading-sub" id="load-sub">Krea Nano Banana 2</div>
     </div>
-
     <!-- Results -->
     <div class="results-wrap">
       <div class="err-card" id="err-card"></div>
@@ -464,9 +467,7 @@ body {
       </div>
       <div class="results-grid" id="results-grid"></div>
     </div>
-
   </div>
-
   <!-- BOTTOM INPUT PANEL -->
   <div class="input-panel" id="input-panel">
     <!-- illustration -->
@@ -485,7 +486,6 @@ body {
         Нажмите чтобы загрузить макет для проверки на соответствие брендбуку
       </div>
     </div>
-
     <div class="controls-row">
       <div class="chips-wrap">
       <!-- ILLUSTRATION controls -->
@@ -523,15 +523,12 @@ body {
         <button class="chip on" onclick="toggleChip(this)">Композиция</button>
       </div>
       </div>
-
       <button class="gen-btn" onclick="currentMode==='brandcheck'?runBrandCheck():generate()" id="gen-btn">
         <span id="gen-btn-text">Сгенерировать</span>
       </button>
     </div>
   </div>
-
 </div>
-
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="if(event.target===this)closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
@@ -541,11 +538,9 @@ body {
     <button class="lightbox-btn" onclick="copyPrompt()">Скопировать промпт ⧉</button>
   </div>
 </div>
-
 <script>
 // Hidden fields the original script expects but new design places elsewhere
 </script>
-
 <script>
 // ─── BRAND JSON TOKENS ───
 const BRAND_TOKENS = {
@@ -583,7 +578,6 @@ const BRAND_TOKENS = {
     base_prompt: `Profi.ru brand photo collage. Light, clean, friendly composition. Asymmetrical layout with clear visual hierarchy and generous negative space. Background: white #FFFFFF or light blue #E6EBFF. Natural commercial photography style — sharp, bright, clean. Main subject large (50-70% of frame). Secondary supporting elements small-scale. Red accent #FF4B55 on clothing, objects or graphic details (small to medium weight). Subtle decorative elements: soft clouds, sparkles, rounded geometric shapes. Soft and subtle depth/shadows. Avoid: outlines around objects, sticker effect, cutout borders, dark backgrounds, harsh shadows, cluttered compositions, heavy filters, oversaturated colors.`
   }
 };
-
 // ─── STATE ───
 let currentMode = 'illustration';
 let history = JSON.parse(localStorage.getItem('profi_gen_history') || '[]');
@@ -595,20 +589,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 let lastPrompt = '';
-
 // ─── API KEYS TOGGLE ───
 function toggleApiKeys(btn) {
   const box = document.getElementById('menu-keys');
   const open = box.classList.toggle('open');
   btn.textContent = 'Ключи API ' + (open ? '⌃' : '⌄');
 }
-
 // ─── MODE SWITCH ───
 function setMode(mode, btn) {
   currentMode = mode;
   document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-
   // switch input field
   document.querySelectorAll('.mode-input').forEach(el => {
     el.classList.toggle('hidden', el.dataset.mode !== mode);
@@ -617,11 +608,9 @@ function setMode(mode, btn) {
   document.querySelectorAll('.chip-group').forEach(g => {
     g.classList.toggle('active', g.dataset.mode === mode);
   });
-
   const btnLabels = { illustration: 'Сгенерировать', photo: 'Сгенерировать', collage: 'Сгенерировать', brandcheck: 'Проверить макет' };
   document.getElementById('gen-btn-text').textContent = btnLabels[mode];
 }
-
 // ─── CHIPS ───
 function toggleChip(el) { el.classList.toggle('on'); }
 function soloChip(el, group) {
@@ -637,28 +626,23 @@ function getSolo(container) {
   const el = container.querySelector('.chip.solo.on');
   return el ? el.textContent.trim() : '1:1';
 }
-
 // ─── API KEY ───
 function checkApiKey() {
   const key = document.getElementById('api-key').value.trim();
   const valid = key.length > 20;
-  document.getElementById('api-dot').className = 'api-dot' + (valid ? ' ok' : '');
   document.getElementById('api-status-text').textContent = valid ? 'Claude API подключён' : 'Claude API';
   if (valid && document.getElementById('remember-key').checked) {
     localStorage.setItem('profi_api_key', key);
   }
 }
-
 function checkKreaKey() {
   const key = document.getElementById('krea-key').value.trim();
   const valid = key.length > 10;
-  document.getElementById('krea-dot').className = 'api-dot' + (valid ? ' ok' : '');
   document.getElementById('krea-status-text').textContent = valid ? 'Krea API подключён' : 'Krea API';
   if (valid && document.getElementById('remember-key').checked) {
     localStorage.setItem('profi_krea_key', key);
   }
 }
-
 function toggleRemember() {
   const key = document.getElementById('api-key').value.trim();
   const kreaKey = document.getElementById('krea-key').value.trim();
@@ -671,7 +655,6 @@ function toggleRemember() {
     localStorage.removeItem('profi_krea_key');
   }
 }
-
 function loadSavedKey() {
   const saved = localStorage.getItem('profi_api_key');
   if (saved) {
@@ -685,14 +668,12 @@ function loadSavedKey() {
     checkKreaKey();
   }
 }
-
 // ─── HISTORY ───
 function toggleHistory() {
   const p = document.getElementById('history-panel');
   p.classList.toggle('on');
   renderHistory();
 }
-
 function renderHistory() {
   const body = document.getElementById('history-body');
   if (!history.length) {
@@ -709,7 +690,6 @@ function renderHistory() {
     </div>
   `).join('');
 }
-
 function loadFromHistory(idx) {
   const h = history[idx];
   lastPrompt = h.prompt;
@@ -717,7 +697,6 @@ function loadFromHistory(idx) {
   document.getElementById('prompt-preview').classList.add('on');
   toggleHistory();
 }
-
 function saveHistory(mode, topic, prompt) {
   const now = new Date();
   history.push({
@@ -727,10 +706,8 @@ function saveHistory(mode, topic, prompt) {
   if (history.length > 30) history.shift();
   localStorage.setItem('profi_gen_history', JSON.stringify(history));
 }
-
 // ─── BRAND CHECK FILE ───
 let bcImageBase64 = null;
-
 function handleBrandCheckFile(event) {
   const _safe = (id) => document.getElementById(id);
   const file = event.target.files[0];
@@ -745,14 +722,12 @@ function handleBrandCheckFile(event) {
   };
   reader.readAsDataURL(file);
 }
-
 function clearBrandCheckFile() {
   bcImageBase64 = null;
   document.getElementById('bc-file-input').value = '';
   document.getElementById('bc-preview-wrap').style.display = 'none';
   document.getElementById('bc-upload-zone').style.display = 'block';
 }
-
 // Drag-and-drop support for upload zone
 document.addEventListener('DOMContentLoaded', () => {
   const zone = document.getElementById('bc-upload-zone');
@@ -769,7 +744,6 @@ document.addEventListener('DOMContentLoaded', () => {
     handleBrandCheckFile({ target: { files: e.dataTransfer.files } });
   });
 });
-
 // ─── RUN BRAND CHECK ───
 async function runBrandCheck() {
   const apiKey = document.getElementById('api-key').value.trim();
@@ -782,7 +756,6 @@ async function runBrandCheck() {
     showErr('Загрузите изображение макета для проверки');
     return;
   }
-
   const checks = Array.from(document.querySelectorAll('#bc-checks .chip.on')).map(c => c.textContent.trim());
   if (!checks.length) {
     showErr('Выберите хотя бы один параметр проверки');
@@ -790,16 +763,12 @@ async function runBrandCheck() {
   }
   const ctxEl = document.getElementById('bc-context');
   const context = ctxEl ? ctxEl.value.trim() : '';
-
   clearErr();
   showLoading(true);
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('results-grid').innerHTML = '';
-
   setLoadStep(1, 'Анализирую макет...', 'Claude изучает изображение');
-
   const systemPrompt = `Ты — эксперт по брендингу Профи.ру. Анализируй макеты строго по брендбуку компании.
-
 БРЕНДБУК ПРОФИ.РУ:
 **Цвета:**
 - Основной градиент: #E6EBFF → #849BFF (синий-фиолетовый)
@@ -807,34 +776,28 @@ async function runBrandCheck() {
 - Нейтральные: #D9DDF0, #C7CCE8, #EEF1FF
 - Фон: #FFFFFF или #E6EBFF
 - Текст: #181C2E
-
 **Типографика:**
 - Один шрифт без засечек
 - Иерархия: крупный жирный заголовок, средний подзаголовок, мелкий текст
 - Без декоративных и рукописных шрифтов
-
 **Иллюстративный стиль:**
 - Геометрические формы, скруглённые углы, без контуров
 - Текстура: лёгкий grain-шум
 - Освещение: стилизованный свет сверху-слева
 - Минимализм: 1–3 объекта, чистый фон
-
 **Фотостиль (Human Lifestyle):**
 - Натуральный дневной свет, низкий контраст
 - Приглушённая насыщенность
 - Живые, не постановочные сцены
 - Тёплая атмосфера
-
 **Логотип:**
 - Отступы строго по гайдлайну
 - Не менять цвет, не искажать пропорции
 - Не перекрывать другими элементами
-
 **Композиция:**
 - Чистота и воздух
 - Один визуальный центр
 - Нет перегруженности
-
 Отвечай СТРОГО в JSON-формате без markdown-обёртки:
 {
   "score": <число 0-100>,
@@ -843,7 +806,6 @@ async function runBrandCheck() {
     { "category": "<название>", "status": "<ok|warn|fail>", "comment": "<комментарий>" }
   ]
 }`;
-
   const userContent = [
     {
       type: "image",
@@ -857,7 +819,6 @@ ${context ? 'Контекст: ' + context : ''}
 Верни только JSON.`
     }
   ];
-
   try {
     setLoadStep(2, 'Claude анализирует...', 'Сверяю с токенами брендбука');
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -875,30 +836,24 @@ ${context ? 'Контекст: ' + context : ''}
         messages: [{ role: 'user', content: userContent }]
       })
     });
-
     const data = await resp.json();
     if (data.error) throw new Error(data.error.message);
-
     const raw = data.content.map(b => b.text || '').join('').trim();
     const clean = raw.replace(/^```json|^```|```$/gm, '').trim();
     const result = JSON.parse(clean);
-
     setLoadStep(3, 'Готово!', '');
     showLoading(false);
     renderBrandCheckResult(result);
-
   } catch(e) {
     showLoading(false);
     showErr('Ошибка бренд-чека: ' + e.message);
   }
 }
-
 function renderBrandCheckResult(result) {
   const score = result.score || 0;
   const scoreClass = score >= 75 ? 'high' : score >= 50 ? 'mid' : 'low';
   const statusIcon = { ok: '✅', warn: '⚠️', fail: '❌' };
   const statusLabel = { ok: 'ОК', warn: 'Замечание', fail: 'Не соответствует' };
-
   const grid = document.getElementById('results-grid');
   grid.innerHTML = `
     <div class="bc-result-card" style="grid-column:1/-1">
@@ -926,7 +881,6 @@ function renderBrandCheckResult(result) {
       </div>
     </div>`;
 }
-
 // ─── GENERATE ───
 async function generate() {
   const apiKey = document.getElementById('api-key').value.trim();
@@ -941,27 +895,22 @@ async function generate() {
     document.querySelector('.mode-input.active, .mode-input[data-mode="'+currentMode+'"]')?.focus();
     return;
   }
-
   clearErr();
   showLoading(true);
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('results-grid').innerHTML = '';
   document.getElementById('prompt-preview').classList.remove('on');
-
   try {
     setLoadStep(1, 'Строю промпт из токенов...', 'Claude читает брендбук');
     const prompt = await buildPrompt(apiKey);
     lastPrompt = prompt;
     saveHistory(currentMode, getTopic(), prompt);
-
     const kreaKey = document.getElementById('krea-key').value.trim();
-
     if (kreaKey) {
       setLoadStep(2, 'Промпт готов! Генерирую вариант 1 из 2...', 'Krea Nano Banana 2');
       try {
         const imageUrls = [];
         const errors = [];
-
         // Generate sequentially — one at a time, avoids Vercel concurrency limits
         for (let i = 0; i < 2; i++) {
           setLoadStep(2, `Промпт готов! Генерирую вариант ${i + 1} из 2...`, 'Krea Nano Banana 2');
@@ -972,10 +921,8 @@ async function generate() {
             errors.push(e.message);
           }
         }
-
         setLoadStep(3, 'Готово!', '');
         showLoading(false);
-
         if (imageUrls.length === 0) {
           throw new Error(errors.join(' | '));
         }
@@ -996,27 +943,22 @@ async function generate() {
       showLoading(false);
       renderResults(prompt);
     }
-
     document.getElementById('pp-text').textContent = prompt;
     document.getElementById('prompt-preview').classList.add('on');
-
   } catch(e) {
     showLoading(false);
     showErr('Ошибка: ' + e.message + '. Проверь API ключ и попробуй снова.');
     document.getElementById('empty-state').style.display = 'block';
   }
 }
-
 function getTopic() {
   if (currentMode === 'illustration') return document.getElementById('il-topic').value || '(без описания)';
   if (currentMode === 'photo') return document.getElementById('ph-topic').value || '(без описания)';
   return document.getElementById('co-topic').value || '(без описания)';
 }
-
 async function buildPrompt(apiKey) {
   const tokens = BRAND_TOKENS[currentMode];
   let userMsg = '';
-
   if (currentMode === 'illustration') {
     const topic = document.getElementById('il-topic').value.trim() || 'общая иллюстрация';
     const grp = document.querySelector('.chip-group[data-mode="illustration"]');
@@ -1024,18 +966,14 @@ async function buildPrompt(apiKey) {
     const deco = Array.from(grp.querySelectorAll('.chip:not(.solo).on')).map(c=>c.textContent.trim()).join(', ');
     const ratio = getSolo(grp);
     userMsg = `Using these exact brand tokens: ${JSON.stringify(tokens.color_palette)}, ${JSON.stringify(tokens.texture)}, ${JSON.stringify(tokens.rendering)}.
-
 Base style prompt: "${tokens.base_prompt}"
-
 Now create a specific illustration prompt for:
 Subject/scene: ${topic}
 Type: ${type === 'Один объект' ? 'simple (1 isolated object)' : 'narrative scene (2-3 objects with action)'}
 Decorative elements: ${deco || 'sparkles only'}
 Aspect ratio: ${ratio}
-
 Write ONLY the final English prompt (60-100 words). Start directly with the subject description. End with: "profi.ru brand style, flat 3d, fine grain noise texture, #E6EBFF to #849BFF gradient, transparent background".`;
   }
-
   if (currentMode === 'photo') {
     const topic = document.getElementById('ph-topic').value.trim() || 'специалист за работой';
     const grp = document.querySelector('.chip-group[data-mode="photo"]');
@@ -1044,19 +982,15 @@ Write ONLY the final English prompt (60-100 words). Start directly with the subj
     const mood = Array.from(grp.querySelectorAll('.chip:not(.solo).on')).map(c=>c.textContent.trim()).join(', ');
     const ratio = getSolo(grp);
     userMsg = `Using these brand tokens: ${JSON.stringify(tokens.emotion)}, ${JSON.stringify(tokens.lighting)}, ${JSON.stringify(tokens.post_processing)}, visual principles: ${JSON.stringify(tokens.visual_principles)}.
-
 Base style: "${tokens.base_prompt}"
-
 Create a specific photo prompt for:
 Scene: ${topic}
 Type: ${scene}
 Location: ${loc}
 Mood: ${mood}
 Aspect ratio: ${ratio}
-
 Write ONLY the final English prompt (60-100 words). Be specific about the scene, people, light and environment. End with: "profi.ru lifestyle photo style, natural daylight, #E6EBFF color atmosphere, slightly cool tone, bright exposure, documentary".`;
   }
-
   if (currentMode === 'collage') {
     const topic = document.getElementById('co-topic').value.trim() || 'услуги Профи';
     const grp = document.querySelector('.chip-group[data-mode="collage"]');
@@ -1065,19 +999,15 @@ Write ONLY the final English prompt (60-100 words). Be specific about the scene,
     const bg = 'Светло-синий';
     const channel = getSolo(grp);
     userMsg = `Using these brand tokens: ${JSON.stringify(tokens.composition)}, ${JSON.stringify(tokens.brand_elements)}, restrictions: ${JSON.stringify(tokens.restrictions)}.
-
 Base style: "${tokens.base_prompt}"
-
 Create a specific collage prompt for:
 Topic: ${topic}
 Main subject: ${hero}
 Decorative elements: ${deco || 'subtle sparkles'}
 Background: ${bg}
 Channel/format: ${channel}
-
 Write ONLY the final English prompt (60-100 words). Describe exact composition, subject placement, decorative details and color usage. End with: "profi.ru brand collage style, #E6EBFF background, #FF4B55 accent, clean asymmetrical layout, no outlines around objects".`;
   }
-
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
@@ -1092,24 +1022,20 @@ Write ONLY the final English prompt (60-100 words). Describe exact composition, 
   if (data.error) throw new Error(data.error.message);
   return data.content[0].text.trim();
 }
-
 // ─── RESULTS ───
 function renderResults(prompt) {
   document.getElementById('results-grid').innerHTML = '';
 }
-
 function openInKrea(encodedPrompt) {
   const prompt = decodeURIComponent(encodedPrompt);
   window.open(`https://www.krea.ai/apps/image/realtime#prompt=${encodeURIComponent(prompt)}`, '_blank');
 }
-
 function openInMidjourney(encodedPrompt) {
   const prompt = decodeURIComponent(encodedPrompt);
   navigator.clipboard.writeText('/imagine prompt: ' + prompt).then(() => {
     alert('Промпт скопирован! Вставь в Discord Midjourney');
   });
 }
-
 async function generateWithKrea(kreaKey, prompt) {
   // Call via Netlify serverless proxy (avoids CORS)
   // Map button text to valid Krea aspect ratio values
@@ -1117,23 +1043,19 @@ async function generateWithKrea(kreaKey, prompt) {
   const activeGrp = document.querySelector('.chip-group.active');
   let ratio = '1:1';
   if (activeGrp) { const c = activeGrp.querySelector('.chip.solo.on'); if (c) { const t = c.textContent.trim(); if (ratioMap[t]) ratio = t; } }
-
   const resp = await fetch('https://profi-brand-generator.vercel.app/api/krea', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prompt, kreaKey, aspectRatio: ratio })
   });
-
   const data = await resp.json();
   if (data.error) throw new Error(data.error + (data.debug ? ' | DEBUG: ' + data.debug : ''));
   if (data.imageUrl) return data.imageUrl;
   throw new Error('Нет URL изображения в ответе');
 }
-
 function renderResultsWithImage(prompt, imageUrl) {
   renderResultsWithImages(prompt, [imageUrl]);
 }
-
 function renderResultsWithImages(prompt, imageUrls) {
   const grid = document.getElementById('results-grid');
   const isSingle = imageUrls.length === 1;
@@ -1143,7 +1065,6 @@ function renderResultsWithImages(prompt, imageUrls) {
     </div>
   `).join('');
 }
-
 function openLightbox(url) {
   document.getElementById('lightbox-img').src = url;
   document.getElementById('lightbox-download').href = url;
@@ -1152,13 +1073,11 @@ function openLightbox(url) {
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('on');
 }
-
 function copyPrompt() {
   navigator.clipboard.writeText(lastPrompt);
   const btn = (typeof event !== 'undefined' && event) ? event.target : null;
   if (btn) { const orig = btn.textContent; btn.textContent = 'Скопировано!'; setTimeout(() => btn.textContent = orig, 2000); }
 }
-
 // ─── UI HELPERS ───
 function showLoading(on) {
   document.getElementById('loading').className = 'loading-card' + (on ? ' on' : '');
@@ -1168,19 +1087,16 @@ function showLoading(on) {
   document.getElementById('gen-btn-text').textContent = on ? 'Генерирую...' : 'Сгенерировать';
   if (on) { const es = document.getElementById('empty-state'); if (es) es.style.display = 'none'; }
 }
-
 function setLoadStep(step, text, sub) {
   document.getElementById('load-text').textContent = text;
   document.getElementById('load-sub').textContent = sub || '';
 }
-
 function showErr(msg) {
   const el = document.getElementById('err-card');
   el.textContent = '' + msg;
   el.classList.add('on');
 }
 function clearErr() { document.getElementById('err-card').classList.remove('on'); }
-
 </script>
 </body>
 </html>
