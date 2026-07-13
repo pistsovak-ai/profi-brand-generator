@@ -13,6 +13,11 @@ export default async function handler(req, res) {
 
     if (!kreaKey) return res.status(400).json({ error: 'Krea API key required' });
 
+    // Strip any non-Latin1 characters (e.g. smart dashes/spaces accidentally
+    // pasted into the key) — HTTP header values must be ByteString (0-255).
+    const cleanKey = String(kreaKey).replace(/[^\x00-\xFF]/g, '').trim();
+    if (!cleanKey) return res.status(400).json({ error: 'Krea API key invalid after cleanup' });
+
     const validRatios = ['1:1','4:5','9:16','16:9','3:2','2:3','4:3','3:4'];
     const ratio = validRatios.includes(aspectRatio) ? aspectRatio : '1:1';
 
@@ -30,7 +35,7 @@ export default async function handler(req, res) {
     const submitResp = await fetch('https://api.krea.ai/generate/image/google/nano-banana-2', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + kreaKey,
+        'Authorization': 'Bearer ' + cleanKey,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(kreaBody)
@@ -74,7 +79,7 @@ export default async function handler(req, res) {
       await new Promise(r => setTimeout(r, 3000));
 
       const pollResp = await fetch('https://api.krea.ai/jobs/' + jobId, {
-        headers: { 'Authorization': 'Bearer ' + kreaKey }
+        headers: { 'Authorization': 'Bearer ' + cleanKey }
       });
 
       let pd;
