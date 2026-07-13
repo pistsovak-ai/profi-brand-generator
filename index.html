@@ -962,8 +962,14 @@ function renderBrandCheckResult(result) {
 }
 
 // ─── GENERATE ───
+// Убирает нелатинские символы (умные тире/кавычки/пробелы), которые
+// ломают HTTP-заголовки при копировании ключа из мессенджеров/писем.
+function cleanKey(k) {
+  return String(k || '').replace(/[^\x00-\xFF]/g, '').trim();
+}
+
 async function generate() {
-  const apiKey = document.getElementById('api-key').value.trim();
+  const apiKey = cleanKey(document.getElementById('api-key').value);
   if (!apiKey) {
     showErr('Сначала введите Claude API-ключ в меню «Ключи API» слева');
     document.getElementById('menu-keys')?.classList.add('open');
@@ -988,7 +994,7 @@ async function generate() {
     lastPrompt = prompt;
     saveHistory(currentMode, getTopic(), prompt);
 
-    const kreaKey = document.getElementById('krea-key').value.trim();
+    const kreaKey = cleanKey(document.getElementById('krea-key').value);
 
     if (kreaKey) {
       setLoadStep(2, 'Промпт готов! Генерирую вариант 1 из 2...', 'Krea Nano Banana 2');
