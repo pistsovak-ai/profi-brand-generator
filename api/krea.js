@@ -9,23 +9,19 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { prompt, kreaKey, aspectRatio, referenceImages, negativePrompt } = req.body;
+    const { prompt, kreaKey, aspectRatio, referenceImages } = req.body;
 
     if (!kreaKey) return res.status(400).json({ error: 'Krea API key required' });
 
     const validRatios = ['1:1','4:5','9:16','16:9','3:2','2:3','4:3','3:4'];
     const ratio = validRatios.includes(aspectRatio) ? aspectRatio : '1:1';
 
-    // Build request body. If reference images are provided, Krea switches
-    // to reference-guided (image-to-image) mode automatically.
+    // Base request — this is the shape Krea's nano-banana endpoint accepts.
     const kreaBody = { prompt, aspect_ratio: ratio };
 
-    if (negativePrompt && typeof negativePrompt === 'string' && negativePrompt.trim()) {
-      kreaBody.negative_prompt = negativePrompt.trim();
-    }
-
+    // Reference images: only attach when explicitly provided AND enabled.
+    // Krea's direct endpoint may reject unknown fields, so this is opt-in.
     if (Array.isArray(referenceImages) && referenceImages.length > 0) {
-      // Krea Nano Banana supports up to 3 reference images
       kreaBody.images = referenceImages.slice(0, 3);
     }
 
@@ -49,7 +45,24 @@ export default async function handler(req, res) {
     }
 
     if (submitResp.status >= 400) {
-      return res.status(500).json({ error: submitData.message || submitData.error || submitText.slice(0, 200) });
+      // Krea often puts validation details in `detail` (array or string).
+      let detailMsg = '';
+      if (submitData.detail) {
+        detailMsg = typeof submitData.detail === 'string'
+          ? submitData.detail
+          : JSON.stringify(submitData.detail);
+      }
+      const fullError = [
+        submitData.message,
+        submitData.error,
+        detailMsg
+      ].filter(Boolean).join(' | ') || submitText.slice(0, 400);
+
+      return res.status(500).json({
+        error: fullError,
+        status: submitResp.status,
+        sentBody: JSON.stringify(kreaBody).slice(0, 300)
+      });
     }
 
     const jobId = submitData.job_id;
