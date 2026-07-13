@@ -583,6 +583,10 @@ const BRAND_TOKENS = {
 // ─── REFERENCE IMAGES (style anchors from repo) ───
 // Положи эталонные картинки в репозиторий: assets/refs/illustration/, /photo/, /collage/
 // и перечисли их имена ниже. Они будут переданы в Krea как style-референсы (до 3 на запрос).
+//
+// ВАЖНО: пока картинок нет в репозитории — держи REFS_ENABLED = false.
+// Как загрузишь эталоны в assets/refs/... → поставь true, чтобы включить фичу.
+const REFS_ENABLED = false;
 const SITE_BASE = 'https://profi-brand-generator.vercel.app';
 const REFERENCE_IMAGES = {
   illustration: [
@@ -1050,7 +1054,8 @@ async function buildPrompt(apiKey) {
   if (currentMode === 'illustration') {
     const topic = document.getElementById('il-topic').value.trim() || 'общая иллюстрация';
     // New structured tokens: substitute the subject directly into the template.
-    // No Claude rewrite — the template already encodes the full brand style.
+    // The template already fully encodes the brand style. Krea has a prompt
+    // length limit, so we do NOT append the long negative_prompt here.
     return tokens.prompt_template.replace(/\{\{SUBJECT_DESCRIPTION\}\}/g, topic);
   }
 
@@ -1143,8 +1148,7 @@ async function generateWithKrea(kreaKey, prompt) {
       prompt,
       kreaKey,
       aspectRatio: ratio,
-      negativePrompt: (BRAND_TOKENS[currentMode] && BRAND_TOKENS[currentMode].negative_prompt) || '',
-      referenceImages: getReferenceImages(currentMode)
+      referenceImages: REFS_ENABLED ? getReferenceImages(currentMode) : []
     })
   });
 
