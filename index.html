@@ -1153,7 +1153,11 @@ async function generateWithKrea(kreaKey, prompt) {
   });
 
   const data = await resp.json();
-  if (data.error) throw new Error(data.error + (data.debug ? ' | DEBUG: ' + data.debug : ''));
+  if (data.error) {
+    let msg = data.error;
+    if (data.sentBody) msg += ' | ОТПРАВЛЕНО: ' + data.sentBody;
+    throw new Error(msg);
+  }
   if (data.imageUrl) return data.imageUrl;
   throw new Error('Нет URL изображения в ответе');
 }
