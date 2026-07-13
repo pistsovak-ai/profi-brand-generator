@@ -9,26 +9,35 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { prompt, kreaKey, aspectRatio } = req.body;
+    const { prompt, kreaKey, aspectRatio, referenceImages, negativePrompt } = req.body;
 
     if (!kreaKey) return res.status(400).json({ error: 'Krea API key required' });
 
     const validRatios = ['1:1','4:5','9:16','16:9','3:2','2:3','4:3','3:4'];
     const ratio = validRatios.includes(aspectRatio) ? aspectRatio : '1:1';
 
-    // Переключено на nano-banana-2 (не pro) — даёт более художественный результат
-    // с перспективой и грейном, ближе к ручной генерации в Krea UI
+    // Build request body. If reference images are provided, Krea switches
+    // to reference-guided (image-to-image) mode automatically.
+    const kreaBody = { prompt, aspect_ratio: ratio };
+
+    if (negativePrompt && typeof negativePrompt === 'string' && negativePrompt.trim()) {
+      kreaBody.negative_prompt = negativePrompt.trim();
+    }
+
+    if (Array.isArray(referenceImages) && referenceImages.length > 0) {
+      // Krea Nano Banana supports up to 3 reference images
+      kreaBody.images = referenceImages.slice(0, 3);
+    }
+
+    console.log('Krea request:', JSON.stringify({ ...kreaBody, prompt: prompt.slice(0, 60) + '...' }));
+
     const submitResp = await fetch('https://api.krea.ai/generate/image/google/nano-banana-2', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + kreaKey,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        prompt,
-        aspect_ratio: ratio,
-        resolution: '1K'
-      })
+      body: JSON.stringify(kreaBody)
     });
 
     const submitText = await submitResp.text();
@@ -81,6 +90,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Timeout — попробуй ещё раз' });
 
   } catch(e) {
-    return res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: 'Server error: ' + e.message });
   }
 }
